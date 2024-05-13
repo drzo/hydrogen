@@ -1,4 +1,4 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
 import {Image} from '@shopify/hydrogen';
 
@@ -23,7 +23,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
 
   const article = blog.articleByHandle;
 
-  return json({article});
+  return {article};
 }
 
 export default function Article() {

@@ -2,7 +2,7 @@ import {Await, type MetaFunction} from '@remix-run/react';
 import {Suspense} from 'react';
 import type {CartQueryDataReturn} from '@shopify/hydrogen';
 import {CartForm} from '@shopify/hydrogen';
-import {json, type ActionFunctionArgs} from '@shopify/remix-oxygen';
+import {unstable_defineAction as defineAction} from '@shopify/remix-oxygen';
 import {CartMain} from '~/components/Cart';
 import {useRootLoaderData} from '~/lib/root-data';
 
@@ -10,7 +10,7 @@ export const meta: MetaFunction = () => {
   return [{title: `Hydrogen | Cart`}];
 };
 
-export async function action({request, context}: ActionFunctionArgs) {
+export const action = defineAction(async ({request, context, response}) => {
   const {cart} = context;
 
   const formData = await request.formData();
@@ -70,17 +70,17 @@ export async function action({request, context}: ActionFunctionArgs) {
 
   headers.append('Set-Cookie', await context.session.commit());
 
-  return json(
-    {
-      cart: cartResult,
-      errors,
-      analytics: {
-        cartId,
-      },
+  response.status = status;
+  response?.headers.append('Set-Cookie', await context.session.commit());
+
+  return {
+    cart: cartResult,
+    errors,
+    analytics: {
+      cartId,
     },
-    {status, headers},
-  );
-}
+  };
+});
 
 export default function Cart() {
   const rootData = useRootLoaderData();

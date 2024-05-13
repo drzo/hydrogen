@@ -2,10 +2,8 @@ import type {CustomerFragment} from 'customer-accountapi.generated';
 import type {CustomerUpdateInput} from '@shopify/hydrogen/customer-account-api-types';
 import {CUSTOMER_UPDATE_MUTATION} from '~/graphql/customer-account/CustomerUpdateMutation';
 import {
-  json,
-  redirect,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+  unstable_defineAction as defineAction,
+  unstable_defineLoader as defineLoader,
 } from '@shopify/remix-oxygen';
 import {
   Form,
@@ -24,24 +22,24 @@ export const meta: MetaFunction = () => {
   return [{title: 'Profile'}];
 };
 
-export async function loader({context}: LoaderFunctionArgs) {
+export const loader = defineLoader(async ({context, response}) => {
   await context.customerAccount.handleAuthStatus();
 
-  return json(
-    {},
-    {
-      headers: {
-        'Set-Cookie': await context.session.commit(),
-      },
-    },
-  );
-}
+  response?.headers.append('Set-Cookie', await context.session.commit());
 
-export async function action({request, context}: ActionFunctionArgs) {
+  return {};
+});
+
+export const action = defineAction(async function action({
+  request,
+  context,
+  response,
+}) {
   const {customerAccount} = context;
 
   if (request.method !== 'PUT') {
-    return json({error: 'Method not allowed'}, {status: 405});
+    response.status = 405;
+    return {error: 'Method not allowed'};
   }
 
   const form = await request.formData();
@@ -76,29 +74,17 @@ export async function action({request, context}: ActionFunctionArgs) {
       throw new Error('Customer profile update failed.');
     }
 
-    return json(
-      {
-        error: null,
-        customer: data?.customerUpdate?.customer,
-      },
-      {
-        headers: {
-          'Set-Cookie': await context.session.commit(),
-        },
-      },
-    );
+    response?.headers.append('Set-Cookie', await context.session.commit());
+    return {
+      error: null,
+      customer: data?.customerUpdate?.customer,
+    };
   } catch (error: any) {
-    return json(
-      {error: error.message, customer: null},
-      {
-        status: 400,
-        headers: {
-          'Set-Cookie': await context.session.commit(),
-        },
-      },
-    );
+    response.status = 400;
+    response?.headers.append('Set-Cookie', await context.session.commit());
+    return {error: error.message, customer: null};
   }
-}
+});
 
 export default function AccountProfile() {
   const account = useOutletContext<{customer: CustomerFragment}>();

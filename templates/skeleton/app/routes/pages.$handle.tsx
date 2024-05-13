@@ -1,4 +1,4 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
@@ -20,7 +20,7 @@ export async function loader({params, context}: LoaderFunctionArgs) {
     throw new Response('Not Found', {status: 404});
   }
 
-  return json({page});
+  return {page};
 }
 
 export default function Page() {

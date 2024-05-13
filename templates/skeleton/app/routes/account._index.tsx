@@ -1,5 +1,8 @@
-import {redirect} from '@shopify/remix-oxygen';
-
 export async function loader() {
-  return redirect('/account/orders');
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: '/account/orders',
+    },
+  });
 }

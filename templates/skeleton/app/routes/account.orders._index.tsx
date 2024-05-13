@@ -5,7 +5,7 @@ import {
   getPaginationVariables,
   flattenConnection,
 } from '@shopify/hydrogen';
-import {json, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {unstable_defineLoader as defineLoader} from '@shopify/remix-oxygen';
 import {CUSTOMER_ORDERS_QUERY} from '~/graphql/customer-account/CustomerOrdersQuery';
 import type {
   CustomerOrdersFragment,
@@ -16,7 +16,7 @@ export const meta: MetaFunction = () => {
   return [{title: 'Orders'}];
 };
 
-export async function loader({request, context}: LoaderFunctionArgs) {
+export const loader = defineLoader(async ({request, context, response}) => {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 20,
   });
@@ -34,15 +34,9 @@ export async function loader({request, context}: LoaderFunctionArgs) {
     throw Error('Customer orders not found');
   }
 
-  return json(
-    {customer: data.customer},
-    {
-      headers: {
-        'Set-Cookie': await context.session.commit(),
-      },
-    },
-  );
-}
+  response?.headers.append('Set-Cookie', await context.session.commit());
+  return {customer: data.customer};
+});
 
 export default function Orders() {
   const {customer} = useLoaderData<{customer: CustomerOrdersFragment}>();

@@ -1,4 +1,4 @@
-import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {unstable_defineLoader as defineLoader} from '@shopify/remix-oxygen';
 import type {
   NormalizedPredictiveSearch,
   NormalizedPredictiveSearchResults,
@@ -34,23 +34,31 @@ const DEFAULT_SEARCH_TYPES: PredictiveSearchTypes[] = [
  * Fetches the search results from the predictive search API
  * requested by the SearchForm component
  */
-export async function loader({request, params, context}: LoaderFunctionArgs) {
-  const search = await fetchPredictiveSearchResults({
-    params,
-    request,
-    context,
-  });
+export const loader = defineLoader(
+  async ({request, params, context, response}) => {
+    const search = await fetchPredictiveSearchResults({
+      params,
+      request,
+      context,
+    });
 
-  return json(search, {
-    headers: {'Cache-Control': `max-age=${search.searchTerm ? 60 : 3600}`},
-  });
-}
+    response?.headers.append(
+      'Cache-Control',
+      `max-age=${search.searchTerm ? 60 : 3600}`,
+    );
+
+    return search;
+  },
+);
 
 async function fetchPredictiveSearchResults({
   params,
   request,
   context,
-}: Pick<LoaderFunctionArgs, 'params' | 'context' | 'request'>) {
+}: Pick<
+  Parameters<Parameters<typeof defineLoader>[0]>[0],
+  'params' | 'context' | 'request'
+>) {
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
   const searchTerm = searchParams.get('q') || '';
@@ -99,7 +107,7 @@ async function fetchPredictiveSearchResults({
  */
 export function normalizePredictiveSearchResults(
   predictiveSearch: PredictiveSearchQuery['predictiveSearch'],
-  locale: LoaderFunctionArgs['params']['locale'],
+  locale: Parameters<Parameters<typeof defineLoader>[0]>[0]['params']['locale'],
 ): NormalizedPredictiveSearch {
   let totalResults = 0;
   if (!predictiveSearch) {

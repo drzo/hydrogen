@@ -1,5 +1,5 @@
 import {Suspense} from 'react';
-import {defer, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {
   Await,
   Link,
@@ -73,7 +73,7 @@ export async function loader({params, request, context}: LoaderFunctionArgs) {
     variables: {handle},
   });
 
-  return defer({product, variants});
+  return {product, variants};
 }
 
 function redirectToFirstVariant({
@@ -86,17 +86,17 @@ function redirectToFirstVariant({
   const url = new URL(request.url);
   const firstVariant = product.variants.nodes[0];
 
-  return redirect(
-    getVariantUrl({
-      pathname: url.pathname,
-      handle: product.handle,
-      selectedOptions: firstVariant.selectedOptions,
-      searchParams: new URLSearchParams(url.search),
-    }),
-    {
-      status: 302,
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: getVariantUrl({
+        pathname: url.pathname,
+        handle: product.handle,
+        selectedOptions: firstVariant.selectedOptions,
+        searchParams: new URLSearchParams(url.search),
+      }),
     },
-  );
+  });
 }
 
 export default function Product() {

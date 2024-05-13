@@ -1,5 +1,5 @@
 import {useNonce} from '@shopify/hydrogen';
-import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {unstable_defineLoader as defineLoader} from '@shopify/remix-oxygen';
 import {
   Links,
   Meta,
@@ -53,7 +53,7 @@ export function links() {
   ];
 }
 
-export async function loader({context}: LoaderFunctionArgs) {
+export const loader = defineLoader(async ({context, response}) => {
   const {storefront, customerAccount, cart} = context;
   const publicStoreDomain = context.env.PUBLIC_STORE_DOMAIN;
 
@@ -76,21 +76,16 @@ export async function loader({context}: LoaderFunctionArgs) {
     },
   });
 
-  return defer(
-    {
-      cart: cartPromise,
-      footer: footerPromise,
-      header: await headerPromise,
-      isLoggedIn: isLoggedInPromise,
-      publicStoreDomain,
-    },
-    {
-      headers: {
-        'Set-Cookie': await context.session.commit(),
-      },
-    },
-  );
-}
+  response?.headers.append('Set-Cookie', await context.session.commit());
+
+  return {
+    cart: cartPromise,
+    footer: footerPromise,
+    header: await headerPromise,
+    isLoggedIn: isLoggedInPromise,
+    publicStoreDomain,
+  };
+});
 
 export default function App() {
   const nonce = useNonce();

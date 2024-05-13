@@ -31,7 +31,7 @@ export async function loader({
     throw new Response('Not found', {status: 404});
   }
 
-  return json({blog});
+  return {blog};
 }
 
 export default function Blog() {

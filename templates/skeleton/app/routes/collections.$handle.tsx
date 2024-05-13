@@ -1,5 +1,5 @@
-import {json, redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
+import {unstable_defineLoader as defineLoader} from '@shopify/remix-oxygen';
+import {useLoaderData, Link, type MetaArgs_SingleFetch} from '@remix-run/react';
 import {
   Pagination,
   getPaginationVariables,
@@ -9,32 +9,39 @@ import {
 import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
+export function meta({data}: MetaArgs_SingleFetch<typeof loader>) {
   return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
-};
-
-export async function loader({request, params, context}: LoaderFunctionArgs) {
-  const {handle} = params;
-  const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
-  });
-
-  if (!handle) {
-    return redirect('/collections');
-  }
-
-  const {collection} = await storefront.query(COLLECTION_QUERY, {
-    variables: {handle, ...paginationVariables},
-  });
-
-  if (!collection) {
-    throw new Response(`Collection ${handle} not found`, {
-      status: 404,
-    });
-  }
-  return json({collection});
 }
+
+export const loader = defineLoader(
+  async ({request, params, context, response}) => {
+    const {handle} = params;
+    const {storefront} = context;
+    const paginationVariables = getPaginationVariables(request, {
+      pageBy: 8,
+    });
+
+    if (!handle) {
+      throw new Response(null, {
+        status: 302,
+        headers: {
+          Location: '/collections',
+        },
+      });
+    }
+
+    const {collection} = await storefront.query(COLLECTION_QUERY, {
+      variables: {handle, ...paginationVariables},
+    });
+
+    if (!collection) {
+      throw new Response(`Collection ${handle} not found`, {
+        status: 404,
+      });
+    }
+    return {collection};
+  },
+);
 
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();

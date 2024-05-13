@@ -4,10 +4,8 @@ import type {
   CustomerFragment,
 } from 'customer-accountapi.generated';
 import {
-  json,
-  redirect,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
+  unstable_defineLoader as defineLoader,
+  unstable_defineAction as defineAction,
 } from '@shopify/remix-oxygen';
 import {
   Form,
@@ -35,20 +33,14 @@ export const meta: MetaFunction = () => {
   return [{title: 'Addresses'}];
 };
 
-export async function loader({context}: LoaderFunctionArgs) {
+export const loader = defineLoader(async function loader({context, response}) {
   await context.customerAccount.handleAuthStatus();
 
-  return json(
-    {},
-    {
-      headers: {
-        'Set-Cookie': await context.session.commit(),
-      },
-    },
-  );
-}
+  response?.headers.append('Set-Cookie', await context.session.commit());
+  return {};
+});
 
-export async function action({request, context}: ActionFunctionArgs) {
+export const action = defineAction(async ({request, context, response}) => {
   const {customerAccount} = context;
 
   try {
@@ -63,16 +55,13 @@ export async function action({request, context}: ActionFunctionArgs) {
 
     // this will ensure redirecting to login never happen for mutatation
     const isLoggedIn = await customerAccount.isLoggedIn();
+
+    // set cookie because isLoggedIn can change session
+    response?.headers.append('Set-Cookie', await context.session.commit());
+
     if (!isLoggedIn) {
-      return json(
-        {error: {[addressId]: 'Unauthorized'}},
-        {
-          status: 401,
-          headers: {
-            'Set-Cookie': await context.session.commit(),
-          },
-        },
-      );
+      response.status = 401;
+      return {error: {[addressId]: 'Unauthorized'}};
     }
 
     const defaultAddress = form.has('defaultAddress')
@@ -102,213 +91,103 @@ export async function action({request, context}: ActionFunctionArgs) {
     switch (request.method) {
       case 'POST': {
         // handle new address creation
-        try {
-          const {data, errors} = await customerAccount.mutate(
-            CREATE_ADDRESS_MUTATION,
-            {
-              variables: {address, defaultAddress},
-            },
-          );
+        const {data, errors} = await customerAccount.mutate(
+          CREATE_ADDRESS_MUTATION,
+          {
+            variables: {address, defaultAddress},
+          },
+        );
 
-          if (errors?.length) {
-            throw new Error(errors[0].message);
-          }
-
-          if (data?.customerAddressCreate?.userErrors?.length) {
-            throw new Error(data?.customerAddressCreate?.userErrors[0].message);
-          }
-
-          if (!data?.customerAddressCreate?.customerAddress) {
-            throw new Error('Customer address create failed.');
-          }
-
-          return json(
-            {
-              error: null,
-              createdAddress: data?.customerAddressCreate?.customerAddress,
-              defaultAddress,
-            },
-            {
-              headers: {
-                'Set-Cookie': await context.session.commit(),
-              },
-            },
-          );
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            return json(
-              {error: {[addressId]: error.message}},
-              {
-                status: 400,
-                headers: {
-                  'Set-Cookie': await context.session.commit(),
-                },
-              },
-            );
-          }
-          return json(
-            {error: {[addressId]: error}},
-            {
-              status: 400,
-              headers: {
-                'Set-Cookie': await context.session.commit(),
-              },
-            },
-          );
+        if (errors?.length) {
+          throw new Error(errors[0].message);
         }
+
+        if (data?.customerAddressCreate?.userErrors?.length) {
+          throw new Error(data?.customerAddressCreate?.userErrors[0].message);
+        }
+
+        if (!data?.customerAddressCreate?.customerAddress) {
+          throw new Error('Customer address create failed.');
+        }
+
+        return {
+          error: null,
+          createdAddress: data?.customerAddressCreate?.customerAddress,
+          defaultAddress,
+        };
       }
 
       case 'PUT': {
         // handle address updates
-        try {
-          const {data, errors} = await customerAccount.mutate(
-            UPDATE_ADDRESS_MUTATION,
-            {
-              variables: {
-                address,
-                addressId: decodeURIComponent(addressId),
-                defaultAddress,
-              },
-            },
-          );
-
-          if (errors?.length) {
-            throw new Error(errors[0].message);
-          }
-
-          if (data?.customerAddressUpdate?.userErrors?.length) {
-            throw new Error(data?.customerAddressUpdate?.userErrors[0].message);
-          }
-
-          if (!data?.customerAddressUpdate?.customerAddress) {
-            throw new Error('Customer address update failed.');
-          }
-
-          return json(
-            {
-              error: null,
-              updatedAddress: address,
+        const {data, errors} = await customerAccount.mutate(
+          UPDATE_ADDRESS_MUTATION,
+          {
+            variables: {
+              address,
+              addressId: decodeURIComponent(addressId),
               defaultAddress,
             },
-            {
-              headers: {
-                'Set-Cookie': await context.session.commit(),
-              },
-            },
-          );
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            return json(
-              {error: {[addressId]: error.message}},
-              {
-                status: 400,
-                headers: {
-                  'Set-Cookie': await context.session.commit(),
-                },
-              },
-            );
-          }
-          return json(
-            {error: {[addressId]: error}},
-            {
-              status: 400,
-              headers: {
-                'Set-Cookie': await context.session.commit(),
-              },
-            },
-          );
+          },
+        );
+
+        if (errors?.length) {
+          throw new Error(errors[0].message);
         }
+
+        if (data?.customerAddressUpdate?.userErrors?.length) {
+          throw new Error(data?.customerAddressUpdate?.userErrors[0].message);
+        }
+
+        if (!data?.customerAddressUpdate?.customerAddress) {
+          throw new Error('Customer address update failed.');
+        }
+
+        return {
+          error: null,
+          updatedAddress: address,
+          defaultAddress,
+        };
       }
 
       case 'DELETE': {
         // handles address deletion
-        try {
-          const {data, errors} = await customerAccount.mutate(
-            DELETE_ADDRESS_MUTATION,
-            {
-              variables: {addressId: decodeURIComponent(addressId)},
-            },
-          );
+        const {data, errors} = await customerAccount.mutate(
+          DELETE_ADDRESS_MUTATION,
+          {
+            variables: {addressId: decodeURIComponent(addressId)},
+          },
+        );
 
-          if (errors?.length) {
-            throw new Error(errors[0].message);
-          }
-
-          if (data?.customerAddressDelete?.userErrors?.length) {
-            throw new Error(data?.customerAddressDelete?.userErrors[0].message);
-          }
-
-          if (!data?.customerAddressDelete?.deletedAddressId) {
-            throw new Error('Customer address delete failed.');
-          }
-
-          return json(
-            {error: null, deletedAddress: addressId},
-            {
-              headers: {
-                'Set-Cookie': await context.session.commit(),
-              },
-            },
-          );
-        } catch (error: unknown) {
-          if (error instanceof Error) {
-            return json(
-              {error: {[addressId]: error.message}},
-              {
-                status: 400,
-                headers: {
-                  'Set-Cookie': await context.session.commit(),
-                },
-              },
-            );
-          }
-          return json(
-            {error: {[addressId]: error}},
-            {
-              status: 400,
-              headers: {
-                'Set-Cookie': await context.session.commit(),
-              },
-            },
-          );
+        if (errors?.length) {
+          throw new Error(errors[0].message);
         }
+
+        if (data?.customerAddressDelete?.userErrors?.length) {
+          throw new Error(data?.customerAddressDelete?.userErrors[0].message);
+        }
+
+        if (!data?.customerAddressDelete?.deletedAddressId) {
+          throw new Error('Customer address delete failed.');
+        }
+
+        return {error: null, deletedAddress: addressId};
       }
 
       default: {
-        return json(
-          {error: {[addressId]: 'Method not allowed'}},
-          {
-            status: 405,
-            headers: {
-              'Set-Cookie': await context.session.commit(),
-            },
-          },
-        );
+        response.status = 405;
+        return {error: {[addressId]: 'Method not allowed'}};
       }
     }
-  } catch (error: unknown) {
+  } catch (error) {
+    response.status = 400;
+
     if (error instanceof Error) {
-      return json(
-        {error: error.message},
-        {
-          status: 400,
-          headers: {
-            'Set-Cookie': await context.session.commit(),
-          },
-        },
-      );
+      return {error: error.message};
     }
-    return json(
-      {error},
-      {
-        status: 400,
-        headers: {
-          'Set-Cookie': await context.session.commit(),
-        },
-      },
-    );
+
+    return {error: JSON.stringify(error)};
   }
-}
+});
 
 export default function Addresses() {
   const {customer} = useOutletContext<{customer: CustomerFragment}>();
