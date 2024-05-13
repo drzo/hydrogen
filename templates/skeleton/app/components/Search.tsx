@@ -257,6 +257,7 @@ export function NoSearchResults() {
 
 type ChildrenRenderProps = {
   fetchResults: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  //Todo: fix this type
   fetcher: ReturnType<typeof useFetcher<NormalizedPredictiveSearchResults>>;
   inputRef: React.MutableRefObject<HTMLInputElement | null>;
 };
