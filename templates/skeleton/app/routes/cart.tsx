@@ -21,7 +21,7 @@ export const action = defineAction(async ({request, context, response}) => {
     throw new Error('No action provided');
   }
 
-  let status = 200;
+  response.status = 200;
   let result: CartQueryDataReturn;
 
   switch (action) {
@@ -58,20 +58,16 @@ export const action = defineAction(async ({request, context, response}) => {
       throw new Error(`${action} cart action is not defined`);
   }
 
-  const cartId = result?.cart?.id;
-  const headers = cartId ? cart.setCartId(result.cart.id) : new Headers();
+  const cartId = result.cart.id;
+  cart.setCartId(cartId, response);
+
   const {cart: cartResult, errors} = result;
 
   const redirectTo = formData.get('redirectTo') ?? null;
   if (typeof redirectTo === 'string') {
-    status = 303;
-    headers.set('Location', redirectTo);
+    response.status = 303;
+    response.headers.set('Location', redirectTo);
   }
-
-  headers.append('Set-Cookie', await context.session.commit());
-
-  response.status = status;
-  response?.headers.append('Set-Cookie', await context.session.commit());
 
   return {
     cart: cartResult,

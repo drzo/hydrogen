@@ -1,8 +1,13 @@
-import {redirect, type ActionFunctionArgs} from '@shopify/remix-oxygen';
+import {type ActionFunctionArgs} from '@shopify/remix-oxygen';
 
 // if we dont implement this, /account/logout will get caught by account.$.tsx to do login
 export async function loader() {
-  return redirect('/');
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: '/',
+    },
+  });
 }
 
 export async function action({context}: ActionFunctionArgs) {

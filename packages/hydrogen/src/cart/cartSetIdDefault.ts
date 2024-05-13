@@ -1,3 +1,5 @@
+import {type ResponseStub} from '@remix-run/server-runtime/dist/single-fetch';
+import {HydrogenSession} from '../hydrogen';
 import {stringify} from 'worktop/cookie';
 
 export type CookieOptions = {
@@ -11,8 +13,8 @@ export type CookieOptions = {
 };
 
 export const cartSetIdDefault = (cookieOptions?: CookieOptions) => {
-  return (cartId: string) => {
-    const headers = new Headers();
+  return (cartId: string, response?: ResponseStub) => {
+    const headers = response ? response.headers : new Headers();
     headers.append(
       'Set-Cookie',
       stringify('cart', cartId.split('/').pop() || '', {
@@ -20,6 +22,7 @@ export const cartSetIdDefault = (cookieOptions?: CookieOptions) => {
         ...cookieOptions,
       }),
     );
+
     return headers;
   };
 };

@@ -1,3 +1,5 @@
+import {type ResponseStub} from '@remix-run/server-runtime/dist/single-fetch';
+
 import {Storefront} from '../storefront';
 import type {CustomerAccount} from '../customer/types';
 import {type CartGetFunction, cartGetDefault} from './queries/cartGetDefault';
@@ -50,7 +52,7 @@ export type CartHandlerOptions = {
   storefront: Storefront;
   customerAccount?: CustomerAccount;
   getCartId: () => string | undefined;
-  setCartId: (cartId: string) => Headers;
+  setCartId: (cartId: string, response?: ResponseStub) => Headers;
   cartQueryFragment?: string;
   cartMutateFragment?: string;
 };
@@ -65,7 +67,7 @@ export type CartHandlerOptionsWithCustom<
 export type HydrogenCart = {
   get: ReturnType<typeof cartGetDefault>;
   getCartId: () => string | undefined;
-  setCartId: (cartId: string) => Headers;
+  setCartId: (cartId: string, response?: ResponseStub) => Headers;
   create: ReturnType<typeof cartCreateDefault>;
   addLines: ReturnType<typeof cartLinesAddDefault>;
   updateLines: ReturnType<typeof cartLinesUpdateDefault>;
@@ -211,7 +213,7 @@ export type CartHandlerOptionsForDocs<
   /**
    * A function that sets the cart ID.
    */
-  setCartId: (cartId: string) => Headers;
+  setCartId: (cartId: string, response?: ResponseStub) => Headers;
   /**
    * The storefront client instance created by [`createStorefrontClient`](docs/api/hydrogen/2024-04/utilities/createstorefrontclient).
    */
@@ -264,7 +266,7 @@ export type HydrogenCartForDocs = {
    * Sets the unique identifier of the cart.
    * By default, it sets the ID in the header cookie.
    */
-  setCartId?: (cartId: string) => Headers;
+  setCartId?: (cartId: string, response?: ResponseStub) => Headers;
   /**
    * Adds extra information (metafields) to the cart.
    * If the cart doesn't exist, a new one will be created.
