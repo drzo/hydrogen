@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {createRequire} from 'node:module';
 import {
   createServer,
   type IncomingMessage,

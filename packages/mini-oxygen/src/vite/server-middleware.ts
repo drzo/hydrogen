@@ -1,7 +1,6 @@
 import {fetchModule, type ViteDevServer} from 'vite';
 import {fileURLToPath} from 'node:url';
 import {
-  fetch,
   createMiniOxygen,
   Request,
   Response,
@@ -128,7 +127,7 @@ export async function startMiniOxygenRuntime({
               if (!setup) return;
 
               const service = env['wrapped_service_' + index];
-              const wrappedBinding = service 
+              const wrappedBinding = service
                 ? (...args) => {
                   return service.fetch(
                     new Request(
