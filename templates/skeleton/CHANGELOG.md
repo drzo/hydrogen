@@ -1,5 +1,14 @@
 # skeleton
 
+## 2024.4.5
+
+### Patch Changes
+
+- Update the skeleton template to use React state in the aside dialogs ([#2088](https://github.com/Shopify/hydrogen/pull/2088)) by [@blittle](https://github.com/blittle)
+
+- Updated dependencies [[`fe82119f`](https://github.com/Shopify/hydrogen/commit/fe82119f5e75df5a0f727bab6a2186e679abc73d), [`8eea75ec`](https://github.com/Shopify/hydrogen/commit/8eea75ec5ead4de98d7d1b2baedce8511029bcae), [`f29c9085`](https://github.com/Shopify/hydrogen/commit/f29c9085eb1adbde9e01226484eba8a85b5074ed), [`9dfd1cfe`](https://github.com/Shopify/hydrogen/commit/9dfd1cfeb3e96c6d3426427a4b5d97ef475dab6d), [`7def3e9f`](https://github.com/Shopify/hydrogen/commit/7def3e9fa6e28f4fde7af43e2f346aa32267c38e)]:
+  - @shopify/hydrogen@2024.4.3
+
 ## 2024.4.4
 
 ### Patch Changes
