@@ -32,12 +32,9 @@ export const loader = defineLoader(
     const redirectUrl = `${redirectParam}?${searchParams}`;
 
     if (!code) {
-      throw new Response(null, {
-        status: 302,
-        headers: {
-          Location: redirectUrl,
-        },
-      });
+      response.status = 302;
+      response.headers.set('Location', redirectUrl);
+      throw response;
     }
 
     const result = await cart.updateDiscountCodes([code]);
@@ -46,11 +43,8 @@ export const loader = defineLoader(
     // Using set-cookie on a 303 redirect will not work if the domain origin have port number (:3000)
     // If there is no cart id and a new cart id is created in the progress, it will not be set in the cookie
     // on localhost:3000
-    return new Response(null, {
-      status: 303,
-      headers: {
-        Location: redirectUrl,
-      },
-    });
+    response!.status = 303;
+    response!.headers.set('Location', redirectUrl);
+    return null;
   },
 );

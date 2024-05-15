@@ -1,13 +1,13 @@
-import {type ActionFunctionArgs} from '@shopify/remix-oxygen';
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+} from '@shopify/remix-oxygen';
 
 // if we dont implement this, /account/logout will get caught by account.$.tsx to do login
-export async function loader() {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: '/',
-    },
-  });
+export async function loader({response}: LoaderFunctionArgs) {
+  response!.status = 302;
+  response!.headers.set('Location', '/');
+  return null;
 }
 
 export async function action({context}: ActionFunctionArgs) {

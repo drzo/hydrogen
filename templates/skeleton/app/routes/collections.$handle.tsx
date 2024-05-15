@@ -22,12 +22,9 @@ export const loader = defineLoader(
     });
 
     if (!handle) {
-      throw new Response(null, {
-        status: 302,
-        headers: {
-          Location: '/collections',
-        },
-      });
+      response.status = 302;
+      response.headers.set('Location', '/collections');
+      throw response;
     }
 
     const {collection} = await storefront.query(COLLECTION_QUERY, {

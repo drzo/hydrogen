@@ -1,8 +1,7 @@
-export async function loader() {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: '/account/orders',
-    },
-  });
+import type {LoaderFunctionArgs} from '@shopify/remix-oxygen';
+
+export async function loader({response}: LoaderFunctionArgs) {
+  response!.status = 302;
+  response!.headers.set('Location', '/account/orders');
+  return null;
 }

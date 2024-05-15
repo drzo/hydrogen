@@ -22,13 +22,11 @@ export const loader = defineLoader(
   async ({request, context, params, response}) => {
     const {cart} = context;
     const {lines} = params;
-    if (!lines)
-      throw new Response(null, {
-        status: 302,
-        headers: {
-          Location: '/cart',
-        },
-      });
+    if (!lines) {
+      response.status = 302;
+      response.headers.set('Location', '/cart');
+      throw response;
+    }
     const linesMap = lines.split(',').map((line) => {
       const lineDetails = line.split(':');
       const variantId = lineDetails[0];
@@ -67,7 +65,7 @@ export const loader = defineLoader(
     if (cartResult.checkoutUrl) {
       response.status = 302;
       response.headers.set('Location', cartResult.checkoutUrl);
-      return null;
+      throw response;
     } else {
       throw new Error('No checkout URL found');
     }

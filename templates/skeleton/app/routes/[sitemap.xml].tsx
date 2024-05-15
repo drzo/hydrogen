@@ -22,6 +22,7 @@ type Entry = {
 export async function loader({
   request,
   context: {storefront},
+  response,
 }: LoaderFunctionArgs) {
   const data = await storefront.query(SITEMAP_QUERY, {
     variables: {
@@ -36,13 +37,9 @@ export async function loader({
 
   const sitemap = generateSitemap({data, baseUrl: new URL(request.url).origin});
 
-  return new Response(sitemap, {
-    headers: {
-      'Content-Type': 'application/xml',
-
-      'Cache-Control': `max-age=${60 * 60 * 24}`,
-    },
-  });
+  response!.headers.set('Content-Type', 'application/xml');
+  response!.headers.set('Cache-Control', `max-age=${60 * 60 * 24}`);
+  return sitemap;
 }
 
 function xmlEncode(string: string) {
