@@ -1,6 +1,6 @@
 import {createElement} from 'react';
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {Location, UIMatch, useMatches} from '@remix-run/react';
+import {Location, type UIMatch_SingleFetch, useMatches} from '@remix-run/react';
 import {cleanup, render} from '@testing-library/react';
 
 import {Seo} from './seo';
@@ -295,7 +295,7 @@ describe('seo', () => {
   });
 });
 
-function fillMatch(partial: Partial<UIMatch<any>> = {}) {
+function fillMatch(partial: Partial<UIMatch_SingleFetch<any>> = {}) {
   return {
     id: 'root',
     pathname: '/',
