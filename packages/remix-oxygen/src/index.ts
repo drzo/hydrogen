@@ -9,13 +9,9 @@ export {createRequestHandler, getStorefrontHeaders} from './server';
 
 export {
   createSession,
-  defer,
   isCookie,
   isSession,
-  json,
   MaxPartSizeExceededError,
-  redirect,
-  redirectDocument,
   unstable_composeUploadHandlers,
   unstable_createMemoryUploadHandler,
   unstable_parseMultipartFormData,
