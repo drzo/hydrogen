@@ -45,8 +45,7 @@ export const loader = defineLoader(async ({params, context, response}) => {
     firstDiscount?.__typename === 'PricingPercentageValue' &&
     firstDiscount?.percentage;
 
-  response?.headers.append('Set-Cookie', await context.session.commit());
-
+  response.headers.set('Set-Cookie', await context.session.commit());
   return {
     order,
     lineItems,

@@ -34,7 +34,7 @@ export const loader = defineLoader(async ({request, context, response}) => {
     throw Error('Customer orders not found');
   }
 
-  response?.headers.append('Set-Cookie', await context.session.commit());
+  response.headers.set('Set-Cookie', await context.session.commit());
   return {customer: data.customer};
 });
 

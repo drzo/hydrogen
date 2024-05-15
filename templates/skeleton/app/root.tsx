@@ -76,8 +76,7 @@ export const loader = defineLoader(async ({context, response}) => {
     },
   });
 
-  response?.headers.append('Set-Cookie', await context.session.commit());
-
+  response.headers.set('Set-Cookie', await context.session.commit());
   return {
     cart: cartPromise,
     footer: footerPromise,

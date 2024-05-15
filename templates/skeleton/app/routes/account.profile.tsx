@@ -25,8 +25,7 @@ export const meta: MetaFunction = () => {
 export const loader = defineLoader(async ({context, response}) => {
   await context.customerAccount.handleAuthStatus();
 
-  response?.headers.append('Set-Cookie', await context.session.commit());
-
+  response.headers.set('Set-Cookie', await context.session.commit());
   return {};
 });
 
@@ -74,15 +73,15 @@ export const action = defineAction(async function action({
       throw new Error('Customer profile update failed.');
     }
 
-    response?.headers.append('Set-Cookie', await context.session.commit());
+    response.headers.set('Set-Cookie', await context.session.commit());
     return {
       error: null,
       customer: data?.customerUpdate?.customer,
     };
   } catch (error: any) {
     response.status = 400;
-    response?.headers.append('Set-Cookie', await context.session.commit());
-    return {error: error.message, customer: null};
+    response.headers.set('Set-Cookie', await context.session.commit());
+    throw {error: error.message, customer: null};
   }
 });
 

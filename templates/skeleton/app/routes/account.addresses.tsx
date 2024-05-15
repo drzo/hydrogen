@@ -36,7 +36,7 @@ export const meta: MetaFunction = () => {
 export const loader = defineLoader(async function loader({context, response}) {
   await context.customerAccount.handleAuthStatus();
 
-  response?.headers.append('Set-Cookie', await context.session.commit());
+  response.headers.set('Set-Cookie', await context.session.commit());
   return {};
 });
 
@@ -57,7 +57,7 @@ export const action = defineAction(async ({request, context, response}) => {
     const isLoggedIn = await customerAccount.isLoggedIn();
 
     // set cookie because isLoggedIn can change session
-    response?.headers.append('Set-Cookie', await context.session.commit());
+    response.headers.set('Set-Cookie', await context.session.commit());
 
     if (!isLoggedIn) {
       response.status = 401;

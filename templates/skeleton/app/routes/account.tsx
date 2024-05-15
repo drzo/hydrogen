@@ -15,12 +15,8 @@ export const loader = defineLoader(async ({context, response}) => {
     throw new Error('Customer not found');
   }
 
-  response?.headers.append(
-    'Cache-Control',
-    'no-cache, no-store, must-revalidate',
-  );
-  response?.headers.append('Set-Cookie', await context.session.commit());
-
+  response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  response.headers.set('Set-Cookie', await context.session.commit());
   return {customer: data.customer};
 });
 

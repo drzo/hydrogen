@@ -42,7 +42,7 @@ export const loader = defineLoader(
       context,
     });
 
-    response?.headers.append(
+    response.headers.append(
       'Cache-Control',
       `max-age=${search.searchTerm ? 60 : 3600}`,
     );
